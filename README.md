@@ -73,7 +73,7 @@ Buka browser dan ketik alamat tersebut.
 
 ---
 
-## Penjelasan File Penting untuk Pemula
+## Penjelasan File Penting 
 
 ### `src/utils/db.js` — LAPISAN DATA
 File ini adalah **jembatan antara FE dan data**.
