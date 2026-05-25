@@ -99,32 +99,6 @@
           </div>
         </div>
 
-        <!-- ── Akun Sosial ── -->
-        <div class="settings-card">
-          <div class="settings-card-header">
-            <div class="settings-card-icon">⊞</div>
-            <div>
-              <div class="settings-card-title">Akun Sosial</div>
-              <div class="settings-card-sub">Hubungkan dengan akun pihak ketiga</div>
-            </div>
-          </div>
-          <div class="settings-card-body">
-            <div class="social-connect-list">
-              <div v-for="s in socialList" :key="s.key" class="social-connect-item">
-                <div class="social-connect-info">
-                  <span :class="['social-badge', s.badgeClass]">
-                    <img :src="s.img" :alt="s.nama" style="width:18px;height:18px;object-fit:contain;" />
-                  </span>
-                  <div>
-                    <div class="social-connect-name">{{ s.nama }}</div>
-                    <div class="social-connect-status needs-backend">Butuh backend server</div>
-                  </div>
-                </div>
-                <button class="btn-sm">Hubungkan</button>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- ── Zona Berbahaya ── -->
         <div class="settings-card danger-card">
