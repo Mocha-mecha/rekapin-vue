@@ -32,7 +32,10 @@ api.interceptors.response.use(
       window.location.hash = '#/login'
     }
     // Ambil pesan error dari backend, fallback ke pesan default
-    const message = err.response?.data?.message || err.message || 'Terjadi kesalahan pada server.'
+    let message = err.response?.data?.message || err.message || 'Terjadi kesalahan pada server.'
+    if (/bad credentials/i.test(message)) {
+      message = 'Username atau password salah silahkan coba lagi'
+    }
     return Promise.reject(new Error(message))
   }
 )

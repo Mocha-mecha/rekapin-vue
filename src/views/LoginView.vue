@@ -126,9 +126,12 @@
         <div v-if="fp.step === 2">
           <div class="fp-step-label">Langkah 2 dari 3 — Pertanyaan Keamanan</div>
           <div class="auth-form" style="gap:14px;display:flex;flex-direction:column">
-            <div class="sq-box">
-              <div class="sq-label">Pertanyaan</div>
-              <div class="sq-question">{{ fp.question }}</div>
+            <div class="auth-field">
+              <label class="auth-label">Pilih Pertanyaan Keamanan</label>
+              <select v-model="fp.sq" class="auth-input">
+                <option value="">— Pilih pertanyaan yang Anda daftarkan —</option>
+                <option v-for="(label, key) in SQ_LABELS" :key="key" :value="key">{{ label }}</option>
+              </select>
             </div>
             <div class="auth-field">
               <label class="auth-label">Jawaban Anda</label>
@@ -195,7 +198,7 @@ export default {
       reg: { nama: '', username: '', password: '', password2: '', sq: '', sa: '', showPw: false, showPw2: false, error: '' },
 
       // Data proses lupa password
-      fp: { step: 1, username: '', question: '', answer: '', newpass: '', newpass2: '', showPw: false, showPw2: false, error: '' },
+      fp: { step: 1, username: '', sq: '', answer: '', newpass: '', newpass2: '', showPw: false, showPw2: false, error: '' },
     }
   },
 
@@ -243,26 +246,18 @@ export default {
       this.fp.error = ''
       if (!this.fp.username) { this.fp.error = 'Username wajib diisi.'; return }
 
-      this.loading = true
-      try {
-        const { sq } = await authSvc.getSecurityQuestion(this.fp.username)
-        this.fp.question = SQ_LABELS[sq] || sq
-        this.fp.step = 2
-      } catch (err) {
-        this.fp.error = err.message
-      } finally {
-        this.loading = false
-      }
+      this.fp.step = 2
     },
 
     // ── Lupa Password: Langkah 2 ──
     async fpStep2() {
       this.fp.error = ''
+      if (!this.fp.sq) { this.fp.error = 'Pertanyaan keamanan wajib dipilih.'; return }
       if (!this.fp.answer) { this.fp.error = 'Jawaban wajib diisi.'; return }
 
       this.loading = true
       try {
-        await authSvc.verifySecurityAnswer(this.fp.username, this.fp.answer)
+        await authSvc.verifySecurityAnswer(this.fp.username, this.fp.sq, this.fp.answer)
         this.fp.step = 3
       } catch (err) {
         this.fp.error = err.message
@@ -282,7 +277,7 @@ export default {
         await authSvc.resetPassword(this.fp.username, this.fp.newpass)
         this.panel = 'main'
         this.tab   = 'login'
-        this.fp    = { step: 1, username: '', question: '', answer: '', newpass: '', newpass2: '', showPw: false, showPw2: false, error: '' }
+        this.fp    = { step: 1, username: '', sq: '', answer: '', newpass: '', newpass2: '', showPw: false, showPw2: false, error: '' }
         window.showToast('✓ Password berhasil diperbarui! Silakan login.', 'success')
       } catch (err) {
         this.fp.error = err.message

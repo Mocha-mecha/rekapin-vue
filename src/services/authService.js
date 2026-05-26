@@ -128,8 +128,8 @@ export async function getSecurityQuestion(username) {
   return { sq: res.securityQuestion }
 }
 
-export async function verifySecurityAnswer(username, answer) {
-  await api.post('/auth/verify-answer', { username, answer })
+export async function verifySecurityAnswer(username, securityQuestion, answer) {
+  await api.post('/auth/verify-answer', { username, securityQuestion, answer })
 }
 
 export async function resetPassword(username, newPassword) {
