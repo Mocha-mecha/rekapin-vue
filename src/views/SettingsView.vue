@@ -25,7 +25,8 @@
             </div>
             <div class="form-field">
               <label class="form-label">Username</label>
-              <input v-model="profil.username" type="text" class="form-input" placeholder="Username" />
+              <input v-model="profil.username" type="text" class="form-input mono readonly-input" placeholder="Username" readonly />
+              <div class="form-hint">Username bersifat tetap dan tidak dapat diubah.</div>
             </div>
             <div v-if="profil.error" class="auth-error show">{{ profil.error }}</div>
             <button class="btn-primary" @click="simpanProfil">Simpan Profil</button>
@@ -191,7 +192,7 @@ export default {
     async simpanProfil() {
       this.profil.error = ''
       const { nama, username } = this.profil
-      if (!nama || !username) { this.profil.error = 'Nama toko dan username wajib diisi.'; return }
+      if (!nama) { this.profil.error = 'Nama toko wajib diisi.'; return }
 
       this.saving = true
       try {

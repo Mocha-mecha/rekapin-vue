@@ -100,7 +100,8 @@ export async function getUserDetails() {
   return normalizeUser(user)
 }
 
-export async function updateProfile({ nama, username }) {
+export async function updateProfile({ nama }) {
+  const username = getUser()?.username
   const res = await api.put('/auth/me', { fullName: nama, username })
   const user = res.user ?? res
   saveAuth(res.token ?? getToken(), user)

@@ -467,14 +467,34 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .landing-nav { padding: 16px 20px; }
+  .landing-nav { padding: 14px 16px; gap: 12px; }
+  .nav-actions { gap: 8px; }
+  .nav-btn-outline,
+  .nav-btn-solid { padding: 8px 12px; font-size: 12px; }
   .hero { padding: 48px 20px 40px; }
-  .hero-title { font-size: 36px; }
+  .hero-title { font-size: 34px; letter-spacing: -1px; }
+  .hero-desc { font-size: 14px; }
+  .hero-cta { flex-direction: column; }
+  .btn-hero-primary,
+  .btn-hero-ghost { width: 100%; }
   .stats-bar { flex-wrap: wrap; padding: 24px 20px; gap: 16px; }
+  .stat-item { width: calc(50% - 8px); padding: 0; }
   .stat-divider { display: none; }
   .fitur-section, .how-section, .cta-section { padding: 48px 20px; }
-  .fitur-grid { grid-template-columns: 1fr 1fr; }
+  .section-title,
+  .cta-title { font-size: 28px; letter-spacing: -0.5px; }
+  .fitur-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 28px; }
   .steps { flex-direction: column; gap: 12px; }
+  .step { width: 100%; }
   .step-arrow { transform: rotate(90deg); margin: 0; }
+  .landing-footer { padding: 24px 20px; }
+}
+
+@media (max-width: 420px) {
+  .landing-nav { align-items: flex-start; flex-direction: column; }
+  .nav-actions { width: 100%; }
+  .nav-btn-outline,
+  .nav-btn-solid { flex: 1; }
+  .hero-title { font-size: 30px; }
 }
 </style>

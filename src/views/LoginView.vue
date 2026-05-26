@@ -7,6 +7,8 @@
   -->
   <div id="auth-screen" style="display: flex;">
 
+    <button type="button" class="auth-back-btn" @click="goLanding">← Beranda</button>
+
     <!-- ══ PANEL UTAMA: Login / Register ══ -->
     <div class="auth-wrap" v-if="panel === 'main'">
 
@@ -198,6 +200,9 @@ export default {
   },
 
   methods: {
+    goLanding() {
+      this.$router.push('/')
+    },
 
     // ── Login ──
     async doLogin() {

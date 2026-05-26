@@ -6,15 +6,36 @@
     <slot /> adalah tempat di mana halaman aktif akan ditampilkan.
     Contoh: saat URL = /dashboard, maka DashboardView masuk ke <slot />.
   -->
-  <div class="app-shell">
+  <div
+    class="app-shell"
+    :class="{
+      'sidebar-collapsed': sidebarCollapsed,
+      'sidebar-open': mobileSidebarOpen,
+    }"
+  >
+
+    <button class="mobile-menu-btn" type="button" aria-label="Buka menu" @click="mobileSidebarOpen = true">
+      ☰
+    </button>
+    <div v-if="mobileSidebarOpen" class="sidebar-backdrop" @click="mobileSidebarOpen = false"></div>
 
     <!-- ══ SIDEBAR (Navigasi Kiri) ══ -->
     <aside id="sidebar">
 
       <!-- Logo & Nama User -->
       <div class="sidebar-brand">
-        <div class="brand-name">Rekap<span style="color: var(--accent3)">in</span></div>
-        <div class="brand-user">{{ namaUser }}</div>
+        <div class="brand-copy">
+          <div class="brand-name">Rekap<span style="color: var(--accent3)">in</span></div>
+          <div class="brand-user">{{ namaUser }}</div>
+        </div>
+        <button
+          class="sidebar-toggle"
+          type="button"
+          :aria-label="sidebarCollapsed ? 'Perbesar sidebar' : 'Perkecil sidebar'"
+          @click="toggleSidebar"
+        >
+          {{ sidebarCollapsed ? '›' : '‹' }}
+        </button>
       </div>
 
       <!-- Menu Navigasi -->
@@ -27,14 +48,17 @@
           @click="navigasi(menu.path)"
         >
           <span class="nav-icon">{{ menu.icon }}</span>
-          {{ menu.label }}
+          <span class="nav-label">{{ menu.label }}</span>
         </button>
       </nav>
 
       <!-- Bagian bawah sidebar: Tanggal & Tombol Keluar -->
       <div class="sidebar-footer">
         <div class="sidebar-date">{{ tanggalHariIni }}</div>
-        <button class="btn-logout" @click="logout">↩ Keluar</button>
+        <button class="btn-logout" @click="logout">
+          <span class="logout-icon">↩</span>
+          <span class="logout-label">Keluar</span>
+        </button>
       </div>
 
     </aside>
@@ -72,6 +96,8 @@ export default {
     return {
       namaUser: '',
       tanggalHariIni: '',
+      sidebarCollapsed: false,
+      mobileSidebarOpen: false,
 
       // Daftar menu navigasi di sidebar
       menuList: [
@@ -92,6 +118,9 @@ export default {
   },
 
   mounted() {
+    this.sidebarCollapsed = localStorage.getItem('rk_sidebar_collapsed') === '1'
+    window.addEventListener('resize', this.handleResize)
+
     // Ambil nama user dari sesi
     const user = getUser()
     if (user) {
@@ -102,10 +131,29 @@ export default {
     this.tanggalHariIni = formatDateLong()
   },
 
+  beforeUnmount() {
+    window.removeEventListener('resize', this.handleResize)
+  },
+
   methods: {
+    toggleSidebar() {
+      if (window.innerWidth <= 760) {
+        this.mobileSidebarOpen = !this.mobileSidebarOpen
+        return
+      }
+
+      this.sidebarCollapsed = !this.sidebarCollapsed
+      localStorage.setItem('rk_sidebar_collapsed', this.sidebarCollapsed ? '1' : '0')
+    },
+
+    handleResize() {
+      if (window.innerWidth > 760) this.mobileSidebarOpen = false
+    },
+
     // Pindah halaman saat menu diklik
     navigasi(path) {
       this.$router.push(path)
+      if (window.innerWidth <= 760) this.mobileSidebarOpen = false
     },
 
     // Keluar dari aplikasi
