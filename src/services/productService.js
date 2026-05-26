@@ -1,59 +1,56 @@
 // services/productService.js
-// Semua operasi produk (CRUD) ada di sini.
-// Saat ini pakai localStorage. Saat backend siap: uncomment blok NANTI.
+// Semua operasi produk (CRUD) terhubung ke backend Spring Boot.
 
-// import api from './api.js'  ← NANTI aktifkan ini
+import api from './api.js'
 
-import { getUserId } from './authService.js'
-import { getProduk, saveProduk } from '../utils/db.js'
-import { genId } from '../utils/helpers.js'
+function toFrontendProduct(p = {}) {
+  return {
+    id:       p.id,
+    nama:     p.nama ?? p.name ?? '',
+    kat:      p.kat ?? p.category ?? '',
+    sat:      p.sat ?? p.unit ?? '',
+    modal:    Number(p.modal ?? p.costPrice ?? 0),
+    jual:     Number(p.jual ?? p.sellingPrice ?? 0),
+    diskon:   Number(p.diskon ?? p.discount ?? 0),
+    hasStock: Boolean(p.hasStock ?? p.useStock ?? false),
+    stock:    Number(p.stock ?? 0),
+  }
+}
+
+function toBackendProduct(p = {}) {
+  return {
+    name:         p.nama,
+    category:     p.kat || null,
+    unit:         p.sat || null,
+    costPrice:    Number(p.modal || 0),
+    sellingPrice: Number(p.jual || 0),
+    discount:     Number(p.diskon || 0),
+    useStock:     Boolean(p.hasStock),
+    stock:        p.hasStock ? Number(p.stock || 0) : 0,
+  }
+}
 
 export async function fetchProducts() {
-  // NANTI: const res = await api.get('/produk'); return res.data
-  return getProduk(getUserId())
+  const products = await api.get('/products')
+  return products.map(toFrontendProduct)
 }
 
 export async function createProduct(data) {
-  // NANTI: const res = await api.post('/produk', data); return res.data
-
-  const userId  = getUserId()
-  const prods   = getProduk(userId)
-  const newProd = { id: genId(), ...data }
-  saveProduk(userId, [...prods, newProd])
-  return newProd
+  const product = await api.post('/products', toBackendProduct(data))
+  return toFrontendProduct(product)
 }
 
 export async function updateProduct(id, data) {
-  // NANTI: const res = await api.put('/produk/' + id, data); return res.data
-
-  const userId = getUserId()
-  const prods  = getProduk(userId)
-  const idx    = prods.findIndex(p => p.id === id)
-  if (idx === -1) throw new Error('Produk tidak ditemukan.')
-  prods[idx] = { ...prods[idx], ...data }
-  saveProduk(userId, prods)
-  return prods[idx]
+  const product = await api.put('/products/' + id, toBackendProduct(data))
+  return toFrontendProduct(product)
 }
 
 export async function deleteProduct(id) {
-  // NANTI: await api.delete('/produk/' + id)
-
-  const userId = getUserId()
-  saveProduk(userId, getProduk(userId).filter(p => p.id !== id))
+  await api.delete('/products/' + id)
 }
 
-// Kurangi stok setelah checkout.
-// Saat backend aktif: backend yang mengurangi stok (source of truth).
-// Frontend hanya kirim request, lalu tampilkan stok terbaru dari response.
-export async function deductStock(items) {
-  // NANTI: const res = await api.post('/produk/deduct', { items }); return res.data
-
-  const userId = getUserId()
-  const prods  = getProduk(userId)
-  items.forEach(({ id, qty }) => {
-    const p = prods.find(x => x.id === id)
-    if (p && p.hasStock) p.stock = Math.max(0, p.stock - qty)
-  })
-  saveProduk(userId, prods)
-  return prods
+// Backend memotong stok secara atomic saat transaksi dibuat.
+// Fungsi ini dipertahankan agar TransaksiView tidak perlu tahu detail backend.
+export async function deductStock() {
+  return fetchProducts()
 }

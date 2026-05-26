@@ -1,52 +1,60 @@
 // services/transactionService.js
-// Semua operasi transaksi ada di sini.
-// Saat ini pakai localStorage. Saat backend siap: uncomment blok NANTI.
+// Semua operasi transaksi terhubung ke backend Spring Boot.
 
-// import api from './api.js'  ← NANTI aktifkan ini
+import api from './api.js'
 
-import { getUserId } from './authService.js'
-import { getTransaksi, saveTransaksi } from '../utils/db.js'
-import { genId, today } from '../utils/helpers.js'
-
-export async function fetchTransactions({ dari, sampai } = {}) {
-  // NANTI:
-  // const res = await api.get('/transaksi', { params: { dari, sampai } })
-  // return res.data
-
-  let trx = getTransaksi(getUserId())
-  if (dari)   trx = trx.filter(t => t.date >= dari)
-  if (sampai) trx = trx.filter(t => t.date <= sampai)
-  return trx
+function toIsoStart(date) {
+  return date ? `${date}T00:00:00` : undefined
 }
 
-export async function createTransaction(keranjang, { total, profit }) {
-  // NANTI:
-  // const payload = { items: keranjang, total, profit }
-  // const res = await api.post('/transaksi', payload)
-  // return res.data  ← termasuk stok terbaru dari server
+function toIsoEnd(date) {
+  return date ? `${date}T23:59:59` : undefined
+}
 
-  const userId = getUserId()
-  const trx = {
-    id:     genId(),
-    date:   today(),
-    time:   new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-    items:  keranjang.map(c => ({
-      productId:   c.id,
-      productName: c.nama,
-      hargaJual:   c.jual,
-      hargaModal:  c.modal,
-      qty:         c.qty,
-    })),
-    total,
-    profit,
+function mapItem(item = {}) {
+  return {
+    id:          item.id,
+    productId:   item.productId ?? item.product?.id,
+    productName: item.productName,
+    hargaJual:   Number(item.hargaJual ?? item.sellingPrice ?? 0),
+    hargaModal:  Number(item.hargaModal ?? item.costPrice ?? 0),
+    qty:         Number(item.qty ?? item.quantity ?? 0),
+    subtotal:    Number(item.subtotal ?? 0),
   }
+}
 
-  const existing = getTransaksi(userId)
-  saveTransaksi(userId, [...existing, trx])
-  return trx
+function mapTransaction(t = {}) {
+  const created = t.createdAt ? new Date(t.createdAt) : new Date()
+  return {
+    id:     t.id,
+    date:   t.date ?? created.toISOString().slice(0, 10),
+    time:   t.time ?? created.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+    items:  (t.items || []).map(mapItem),
+    total:  Number(t.total ?? t.totalAmount ?? 0),
+    profit: Number(t.profit ?? t.estimatedProfit ?? 0),
+  }
+}
+
+export async function fetchTransactions({ dari, sampai } = {}) {
+  const params = {}
+  if (dari) params.start = toIsoStart(dari)
+  if (sampai) params.end = toIsoEnd(sampai)
+
+  const transactions = await api.get('/transactions', { params })
+  return transactions.map(mapTransaction)
+}
+
+export async function createTransaction(keranjang) {
+  const payload = {
+    items: keranjang.map(item => ({
+      productId: item.id,
+      quantity:  item.qty,
+    })),
+  }
+  const transaction = await api.post('/transactions', payload)
+  return mapTransaction(transaction)
 }
 
 export async function deleteAllTransactions() {
-  // NANTI: await api.delete('/transaksi')
-  saveTransaksi(getUserId(), [])
+  await api.delete('/transactions')
 }

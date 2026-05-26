@@ -1,8 +1,6 @@
 // services/api.js
 // ─────────────────────────────────────────────────────────────
 // Axios instance siap pakai untuk Spring Boot.
-// Saat ini BELUM dipakai (semua masih localStorage).
-// Cara aktifkan: uncomment baris 'import api from ...' di setiap service.
 // ─────────────────────────────────────────────────────────────
 
 import axios from 'axios'
@@ -25,7 +23,7 @@ api.interceptors.request.use(
 
 // ── Response: tangani error global ──
 api.interceptors.response.use(
-  res => res,
+  res => res.data?.data ?? res.data,
   err => {
     // Token expired / tidak valid → paksa logout
     if (err.response?.status === 401) {
