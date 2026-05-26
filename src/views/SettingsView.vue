@@ -69,38 +69,6 @@
           </div>
         </div>
 
-        <!-- ── Pertanyaan Keamanan ── -->
-        <div class="settings-card">
-          <div class="settings-card-header">
-            <div class="settings-card-icon">◈</div>
-            <div>
-              <div class="settings-card-title">Pertanyaan Keamanan</div>
-              <div class="settings-card-sub">Dipakai jika lupa password</div>
-            </div>
-          </div>
-          <div class="settings-card-body">
-            <!-- Tampilkan pertanyaan aktif jika ada -->
-            <div v-if="pertanyaanAktif" class="sq-current">
-              <div class="sq-label">Pertanyaan aktif saat ini</div>
-              <div class="sq-question">{{ pertanyaanAktif }}</div>
-            </div>
-            <div class="form-field">
-              <label class="form-label">Pertanyaan Baru</label>
-              <select v-model="keamanan.sq" class="form-input">
-                <option value="">— Pilih pertanyaan —</option>
-                <option v-for="(label, key) in SQ_LABELS" :key="key" :value="key">{{ label }}</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label class="form-label">Jawaban Baru</label>
-              <input v-model="keamanan.sa" type="text" class="form-input" placeholder="Jawaban keamanan baru" />
-            </div>
-            <div v-if="keamanan.error" class="auth-error show">{{ keamanan.error }}</div>
-            <button class="btn-primary" @click="simpanKeamanan">Simpan Pertanyaan</button>
-          </div>
-        </div>
-
-
         <!-- ── Zona Berbahaya ── -->
         <div class="settings-card danger-card">
           <div class="settings-card-header">
@@ -137,37 +105,18 @@
 import * as authSvc from '../services/authService.js'
 import { deleteAllTransactions } from '../services/transactionService.js'
 import { validatePasswordChange } from '../utils/validation.js'
-import { SQ_LABELS } from '../utils/helpers.js'
-import iconGoogle from '../assets/icons/google.svg'
-import iconApple  from '../assets/icons/apple.svg'
-import iconEmail  from '../assets/icons/email.svg'
 
 export default {
   name: 'SettingsView',
 
   data() {
     return {
-      SQ_LABELS,
-
       // Data form profil
       profil: { nama: '', username: '', error: '' },
 
       // Data form ganti password
       pw: { lama: '', baru: '', konfirmasi: '', showLama: false, showBaru: false, showKonfirmasi: false, error: '' },
-
-      // Data form pertanyaan keamanan
-      keamanan: { sq: '', sa: '', error: '' },
-
-      // Pertanyaan keamanan yang sedang aktif
-      pertanyaanAktif: '',
       saving: false,
-
-      // Daftar social login
-      socialList: [
-        { key: 'google', nama: 'Google',          img: iconGoogle, badgeClass: 'google-badge' },
-        { key: 'apple',  nama: 'Apple',            img: iconApple,  badgeClass: 'apple-badge'  },
-        { key: 'email',  nama: 'Magic Email Link', img: iconEmail,  badgeClass: 'email-badge'  },
-      ]
     }
   },
 
@@ -182,7 +131,6 @@ export default {
         if (!user) return
         this.profil.nama     = user.nama     || ''
         this.profil.username = user.username || ''
-        if (user.sq) this.pertanyaanAktif = SQ_LABELS[user.sq] || user.sq
       } catch (err) {
         window.showToast('Gagal memuat data: ' + err.message, 'error')
       }
@@ -220,26 +168,6 @@ export default {
         window.showToast('✓ Password berhasil diganti!', 'success')
       } catch (err) {
         this.pw.error = err.message
-      } finally {
-        this.saving = false
-      }
-    },
-
-    // ── Simpan Pertanyaan Keamanan ──
-    async simpanKeamanan() {
-      this.keamanan.error = ''
-      const { sq, sa } = this.keamanan
-      if (!sq || !sa) { this.keamanan.error = 'Pertanyaan dan jawaban wajib diisi.'; return }
-
-      this.saving = true
-      try {
-        await authSvc.changeSecurityQuestion({ sq, sa })
-        this.pertanyaanAktif = SQ_LABELS[sq] || sq
-        this.keamanan.sq     = ''
-        this.keamanan.sa     = ''
-        window.showToast('✓ Pertanyaan keamanan disimpan!', 'success')
-      } catch (err) {
-        this.keamanan.error = err.message
       } finally {
         this.saving = false
       }

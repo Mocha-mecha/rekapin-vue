@@ -55,7 +55,7 @@
       <!-- Bagian bawah sidebar: Tanggal & Tombol Keluar -->
       <div class="sidebar-footer">
         <div class="sidebar-date">{{ tanggalHariIni }}</div>
-        <button class="btn-logout" @click="logout">
+        <button class="btn-logout" type="button" @click.stop="logout">
           <span class="logout-icon">↩</span>
           <span class="logout-label">Keluar</span>
         </button>
@@ -159,6 +159,7 @@ export default {
     // Keluar dari aplikasi
     logout() {
       if (!confirm('Yakin ingin keluar dari aplikasi?')) return
+      this.mobileSidebarOpen = false
       authLogout()
       this.$router.push('/login')
     }

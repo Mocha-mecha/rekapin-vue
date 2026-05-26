@@ -64,24 +64,26 @@
               Untung: <span>{{ fmtRp(grup.profit) }}</span>
             </div>
           </div>
-          <table class="data-table" style="border-radius:0 0 var(--r) var(--r)">
-            <thead>
-              <tr>
-                <th>Waktu</th><th>Produk</th><th>Qty</th><th>Omzet</th><th>Keuntungan</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="t in [...grup.trx].sort((a,b) => (b.time||'').localeCompare(a.time||''))" :key="t.id">
-                <td class="mono">{{ t.time || '&mdash;' }}</td>
-                <td style="font-size:12px;color:var(--text2)">
-                  {{ t.items.map(i => i.productName + ' x' + i.qty).join(', ') }}
-                </td>
-                <td>{{ t.items.reduce((s,i) => s + i.qty, 0) }} item</td>
-                <td class="mono">{{ fmtRp(t.total) }}</td>
-                <td class="mono" style="color:var(--accent)">{{ fmtRp(t.profit) }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="group-table-wrap">
+            <table class="data-table report-table">
+              <thead>
+                <tr>
+                  <th>Waktu</th><th>Produk</th><th>Qty</th><th>Omzet</th><th>Keuntungan</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="t in [...grup.trx].sort((a,b) => (b.time||'').localeCompare(a.time||''))" :key="t.id">
+                  <td class="mono">{{ t.time || '&mdash;' }}</td>
+                  <td class="report-products">
+                    {{ t.items.map(i => i.productName + ' x' + i.qty).join(', ') }}
+                  </td>
+                  <td>{{ t.items.reduce((s,i) => s + i.qty, 0) }} item</td>
+                  <td class="mono">{{ fmtRp(t.total) }}</td>
+                  <td class="mono" style="color:var(--accent)">{{ fmtRp(t.profit) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
