@@ -71,6 +71,7 @@ async function refreshUser() {
 }
 
 export async function login(username, password) {
+  clearAuth()
   const res = await api.post('/auth/login', { username, password })
   saveAuth(res.token, { username })
   const user = await refreshUser()
@@ -78,6 +79,7 @@ export async function login(username, password) {
 }
 
 export async function register({ nama, username, password, sq, sa }) {
+  clearAuth()
   const res = await api.post('/auth/register', {
     username,
     password,

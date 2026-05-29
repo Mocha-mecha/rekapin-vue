@@ -6,14 +6,31 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 })
 
+const PUBLIC_AUTH_PATHS = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/security',
+  '/auth/verify-answer',
+  '/auth/reset-password',
+]
+
+function isPublicAuthRequest(url = '') {
+  return PUBLIC_AUTH_PATHS.some(path => url.startsWith(path))
+}
+
 // ── Request: auto-inject JWT token ke setiap request ──
 api.interceptors.request.use(
   config => {
+    if (isPublicAuthRequest(config.url || '')) {
+      delete config.headers.Authorization
+      return config
+    }
+
     const token = localStorage.getItem('rk_token')
     if (token) config.headers.Authorization = `Bearer ${token}`
     return config
@@ -26,10 +43,12 @@ api.interceptors.response.use(
   res => res.data?.data ?? res.data,
   err => {
     // Token expired / tidak valid → paksa logout
-    if (err.response?.status === 401) {
+    if (err.response?.status === 401 || err.response?.status === 403) {
       localStorage.removeItem('rk_token')
       localStorage.removeItem('rk_user')
-      window.location.hash = '#/login'
+      if (!isPublicAuthRequest(err.config?.url || '')) {
+        window.location.hash = '#/login'
+      }
     }
     // Ambil pesan error dari backend, fallback ke pesan default
     let message = err.response?.data?.message || err.message || 'Terjadi kesalahan pada server.'
